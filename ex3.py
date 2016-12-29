@@ -4,10 +4,24 @@ from math import log
 
 import numpy as np
 
+GAIN_MEASURE_VALUES = ["info-gain", "err"]
+
 
 class AttributeNotFoundError(Exception):
     def __str__(self):
         return "Not found in tree"
+
+
+class InvalidValueGiven(Exception):
+    def __init__(self, value, legal):
+        self.value = value
+        self.legal = legal
+
+    def __str__(self):
+        message = "Invalid value given for %s" % self.value
+        if self.legal is not None:
+            message += ", legal values: %s" % self.legal
+        return message
 
 
 class TreeNode:
@@ -17,9 +31,12 @@ class TreeNode:
         self.value = value
 
     def __str__(self):
+        if self.value == "ROOT":
+            return "'%s'" % (self.attribute) if not self.has_children() else "%s(%s)" % (
+                self.attribute, ', '.join(str(child) for child in self.children))
         if self.has_children():
             return "%s -> %s(%s)" % (self.value, self.attribute, ', '.join(str(child) for child in self.children))
-        return "%s -> '%s'" % (self.value, self.attribute)
+        return "%s: '%s'" % (self.value, self.attribute)
 
     def add_child(self, child):
         self.children.append(child)
@@ -175,13 +192,23 @@ def parse_and_predict(tree, validation_file_path):
         prediction = predict(tree, example, attributes)
         correct += 1 if prediction == example[-1] else 0
         print '%s: %s' % (i, prediction)
-    print "Accuracy: %s" % (float(correct) / len(examples))
+    return float(correct) / len(examples)
+
+
+def extract_gain_measure():
+    measure_gain = sys.argv[3] if len(sys.argv) >= 4 else GAIN_MEASURE_VALUES[0]
+    if measure_gain not in GAIN_MEASURE_VALUES:
+        raise InvalidValueGiven("gain_measure", GAIN_MEASURE_VALUES)
+    return measure_gain
 
 
 if __name__ == '__main__':
     train_file_path = sys.argv[1] if len(sys.argv) >= 2 else "dataset/titanic_train.txt"
     validation_file_path = sys.argv[2] if len(sys.argv) >= 3 else "dataset/titanic_val.txt"
-    gain_measure = sys.argv[3] if len(sys.argv) >= 4 else "info-gain"
+    gain_measure = extract_gain_measure()
     tree = train(train_file_path, gain_measure)
-    print tree
-    parse_and_predict(tree, validation_file_path)
+    accuracy = parse_and_predict(tree, validation_file_path)
+    with open("output_tree.txt", 'w') as output_tree:
+        output_tree.write(str(tree))
+    with open("output_acc.txt", 'w') as output_acc:
+        output_acc.write(str(accuracy))
