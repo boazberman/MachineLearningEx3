@@ -1,6 +1,6 @@
 import unittest
 
-from ex3 import count_values, information_gain, choose_attribute, split_examples_by_value
+from ex3 import count_values, information_gain, choose_attribute, split_examples_by_value, GAIN_MEASURE_VALUES
 
 EXAMPLES = [['crew', 'adult', 'male', 'no'], ['crew', 'adult', 'male', 'yes'], ['crew', 'adult', 'male', 'no'],
             ['3rd', 'adult', 'male', 'no'], ['2nd', 'adult', 'male', 'no'], ['crew', 'adult', 'male', 'no'],
@@ -15,11 +15,11 @@ class TestStringMethods(unittest.TestCase):
         self.assertEqual(counter, {})
 
     def test_information_gain(self):
-        ig = information_gain(ATTRIBUTES, EXAMPLES, gain_measure)
+        ig = information_gain(ATTRIBUTES, EXAMPLES, GAIN_MEASURE_VALUES[0])
         self.assertEqual(ig, {})
 
     def test_choose_attribute(self):
-        self.assertEqual(choose_attribute(ATTRIBUTES, EXAMPLES, gain_measure), 'pclass')
+        self.assertEqual(choose_attribute(ATTRIBUTES, EXAMPLES, GAIN_MEASURE_VALUES[0]), 'pclass')
 
     def test_split_examples_by_value(self):
         self.assertEqual(split_examples_by_value(EXAMPLES, 0), {})
