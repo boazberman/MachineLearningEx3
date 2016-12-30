@@ -79,17 +79,17 @@ def count_values(attributes, examples):
     # Each key: (tag, value, attribute)
     # counter = Counter()
     # Fucking dictionary of attributes where each attribute contains Counter of (value, tag)
-    fucker = dict.fromkeys(attributes[:-1])
+    values = dict.fromkeys(attributes[:-1])
     for example in examples:
         for i, value in enumerate(example[:-1]):
             attribute = attributes[i]
-            if fucker[attribute] is None:
-                fucker[attribute] = {}
-            if value not in fucker[attribute]:
-                fucker[attribute][value] = {'count': 0, 'tags': Counter()}
-            fucker[attribute][value]['count'] += 1
-            fucker[attribute][value]['tags'][example[-1]] += 1
-    return fucker
+            if values[attribute] is None:
+                values[attribute] = {}
+            if value not in values[attribute]:
+                values[attribute][value] = {'count': 0, 'tags': Counter()}
+            values[attribute][value]['count'] += 1
+            values[attribute][value]['tags'][example[-1]] += 1
+    return values
 
 
 def calculate_c(taggings_counter, total_size, gain_measure):
@@ -129,20 +129,21 @@ def list_without(a_list, i):
     return np.delete(a_list, i)
 
 
-def split_examples_by_value(examples, attribute_index):
+def split_examples_by_value(examples, attribute_index, attribute_values):
     examples_by_value = {}
+    for value in attribute_values:
+        examples_by_value[value] = []
     for example in examples:
         value = example[attribute_index]
-        if value not in examples_by_value:
-            examples_by_value[value] = []
         examples_by_value[value].append(list_without(example, attribute_index))
     for value in examples_by_value:
         examples_by_value[value] = np.array(examples_by_value[value])
     return examples_by_value
 
 
-def id3_algorithm(examples, attributes, gain_measure, default=None, value="ROOT"):
+def id3_algorithm(examples, attributes, attributes_values, gain_measure, default=None, value="ROOT"):
     '''
+    :param attributes_values:
     :param gain_measure:
     :param value:
     :param examples: dictionary containing classification and a list of attributes
@@ -159,19 +160,33 @@ def id3_algorithm(examples, attributes, gain_measure, default=None, value="ROOT"
     else:
         best_attribute = choose_attribute(attributes, examples, gain_measure)
         tree = TreeNode(best_attribute, value)
-        examples_by_value = split_examples_by_value(examples, attributes.index(best_attribute))
+        examples_by_value = split_examples_by_value(examples, attributes.index(best_attribute),
+                                                    attributes_values[best_attribute])
         for value, example_i in examples_by_value.iteritems():
-            subtree = id3_algorithm(example_i, [a for a in attributes if a != best_attribute], gain_measure,
+            subtree = id3_algorithm(example_i, [a for a in attributes if a != best_attribute], attributes_values,
+                                    gain_measure,
                                     majority_value(examples), value)
             tree.add_child(subtree)
         return tree
+
+
+def extract_attributes_values(attributes, examples):
+    attributes_values = {}
+    for attribute in attributes:
+        attributes_values[attribute] = set()
+    for example in examples:
+        for i, value in enumerate(example):
+            attribute = attributes[i]
+            attributes_values[attribute].add(value)
+    return attributes_values
 
 
 def train(train_file_path, gain_measure):
     text = np.loadtxt(train_file_path, dtype=str)
     attributes = text[0].tolist()
     examples = text[1:]
-    return id3_algorithm(examples, attributes, gain_measure)
+    attributes_values = extract_attributes_values(attributes, examples)
+    return id3_algorithm(examples, attributes, attributes_values, gain_measure)
 
 
 def predict(tree, example, attributes):

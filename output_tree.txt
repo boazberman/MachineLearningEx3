@@ -1,1 +1,1 @@
-sex(male -> age(adult -> pclass(1st: 'no', crew: 'no', 3rd: 'no', 2nd: 'no'), child -> pclass(2nd: 'yes', 3rd: 'no', 1st: 'yes')), female -> pclass(crew: 'yes', 1st -> age(adult: 'yes', child: 'yes'), 3rd -> age(adult: 'no', child: 'no'), 2nd -> age(adult: 'yes', child: 'yes')))
+sex(male -> age(adult -> pclass(2nd: 'no', crew: 'no', 3rd: 'no', 1st: 'no'), child -> pclass(2nd: 'yes', crew: 'no', 3rd: 'no', 1st: 'yes')), female -> pclass(2nd -> age(adult: 'yes', child: 'yes'), crew: 'yes', 3rd -> age(adult: 'no', child: 'no'), 1st -> age(adult: 'yes', child: 'yes')))

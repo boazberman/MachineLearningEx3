@@ -22,7 +22,7 @@ class TestStringMethods(unittest.TestCase):
         self.assertEqual(choose_attribute(ATTRIBUTES, EXAMPLES, GAIN_MEASURE_VALUES[0]), 'pclass')
 
     def test_split_examples_by_value(self):
-        self.assertEqual(split_examples_by_value(EXAMPLES, 0), {})
+        self.assertEqual(split_examples_by_value(EXAMPLES, 0, {}), {})
 
 
 if __name__ == '__main__':
